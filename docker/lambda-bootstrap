@@ -1,0 +1,5 @@
+#!/bin/sh
+
+HANDLER_FILE=$(echo "${_HANDLER}" | cut -d ':' -f 1)
+
+/usr/local/bin/php "${HANDLER_FILE}"

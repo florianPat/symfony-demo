@@ -1,0 +1,61 @@
+version: "3.6"
+
+services:
+  php:
+    build:
+      context: /home/florain/projects/symfony-demo-application
+      target: dev
+      dockerfile: docker/Dockerfile
+    environment:
+      PHP_IDE_CONFIG: "serverName=symfony"
+    volumes:
+      - /home/florain/projects/symfony-demo-application:/app
+    networks:
+      - lando_bridge_network
+  caddy:
+    build:
+      context: /home/florain/projects/symfony-demo-application
+      target: app_caddy
+      dockerfile: docker/caddy/Dockerfile
+    depends_on:
+      - php
+    environment:
+      LANDO_SERVICE_TYPE: webserver
+      LANDO_WEBROOT: /app/public
+      #MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      #MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - /home/florain/projects/symfony-demo-application/public:/app/public
+      - /home/florain/.lando/scripts/add-cert.sh:/scripts/000-add-cert
+      - /home/florain/.lando:/lando:cached
+    networks:
+      - lando_bridge_network
+  database:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_USER: app
+      LANDO_SERVICE_TYPE: psql
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+    healthcheck:
+      test: psql -U postgres -c "\\\l"
+    networks:
+      - lando_bridge_network
+  mailer:
+    image: schickling/mailcatcher
+    ports: ["1025", "1080"]
+    networks:
+      - lando_bridge_network
+
+volumes:
+  caddy_data: ~
+  caddy_config: ~
+  db-data: ~
+
+networks:
+  lando_bridge_network:
+    external: true

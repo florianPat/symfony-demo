@@ -1,0 +1,42 @@
+name: symfony-demo-application
+keys: false
+compose:
+  - docker-compose.yml
+env_file:
+  - .env
+proxy:
+  caddy:
+    - demo.lndo.site
+  mailer:
+    - mail.lndo.site:1080
+services:
+  php:
+    app_mount: false
+  caddy:
+    app_mount: false
+    ssl: true
+    sslExpose: true
+  database:
+    app_mount: false
+  mailer:
+    app_mount: false
+tooling:
+  composer:
+    service: php
+    cmd: composer
+    environment:
+      XDEBUG_MODE: off
+  console:
+    service: php
+    cmd: bin/console
+  phpunit:
+    service: php
+    cmd: bin/phpunit
+  php:
+    service: php
+    cmd: php
+  psql:
+    service: database
+    cmd: psql -Uapp
+    user: root
+    dir: /
