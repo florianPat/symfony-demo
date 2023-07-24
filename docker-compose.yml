@@ -12,6 +12,8 @@ services:
       - /home/florain/projects/symfony-demo-application:/app
     networks:
       - lando_bridge_network
+    depends_on:
+      - database
   caddy:
     build:
       context: /home/florain/projects/symfony-demo-application
@@ -20,7 +22,6 @@ services:
     depends_on:
       - php
     environment:
-      LANDO_SERVICE_TYPE: webserver
       LANDO_WEBROOT: /app/public
       #MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       #MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}

@@ -1,5 +1,9 @@
 name: symfony-demo-application
 keys: false
+compose:
+  - docker-compose.yml
+env_file:
+  - .env
 proxy:
   caddy:
     - demo.lndo.site
@@ -7,89 +11,15 @@ proxy:
     - mail.lndo.site:1080
 services:
   php:
-    type: compose
     app_mount: false
-    services:
-      command: ["php-fpm"]
-      build:
-        context: .
-        target: dev
-        dockerfile: docker/Dockerfile
-      environment:
-        PHP_IDE_CONFIG: "serverName=symfony"
-      volumes:
-        - .:/app
-      env_file:
-        - /home/florain/projects/symfony-demo-application/.env
-      networks:
-        - lando_bridge_network
-    networks:
-      lando_bridge_network:
-        external: true
   caddy:
-    type: compose
     app_mount: false
     ssl: true
     sslExpose: true
-    services:
-      command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
-      build:
-        context: .
-        target: app_caddy
-        dockerfile: docker/caddy/Dockerfile
-      depends_on:
-        - php
-      environment:
-        LANDO_SERVICE_TYPE: webserver
-        LANDO_WEBROOT: /app/public
-        #MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-        #MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      volumes:
-        - caddy_data:/data
-        - caddy_config:/config
-        - ./public:/app/public
-      networks:
-        - lando_bridge_network
-    volumes:
-      caddy_data: ~
-      caddy_config: ~
-    networks:
-      lando_bridge_network:
-        external: true
   database:
-    type: compose
     app_mount: false
-    services:
-      command: ["docker-entrypoint.sh", "postgres"]
-      image: postgres:14-alpine
-      environment:
-        POSTGRES_DB: app
-        POSTGRES_PASSWORD: app
-        POSTGRES_USER: app
-        LANDO_SERVICE_TYPE: psql
-      volumes:
-        - db-data:/var/lib/postgresql/data:rw
-      healthcheck:
-        test: psql -U postgres -c "\\\l"
-      networks:
-        - lando_bridge_network
-    volumes:
-      db-data: ~
-    networks:
-      lando_bridge_network:
-        external: true
   mailer:
-    type: compose
     app_mount: false
-    services:
-      command: ["mailcatcher", "--no-quit", "--foreground", "--ip=0.0.0.0"]
-      image: schickling/mailcatcher
-      ports: ["1025", "1080"]
-      networks:
-        - lando_bridge_network
-    networks:
-      lando_bridge_network:
-        external: true
 tooling:
   composer:
     service: php
