@@ -24,6 +24,10 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+        # ching metadata information, that is, all the information you supply via attributes, annotations, xml or yaml, so that they do not need to be parsed and loaded fro
+        #metadata_cache_driver: array
+        #  to use for caching DQL queries, that is, the result of a DQL parsing process that includes the final SQL as well as meta information about how to process the SQL result set of a query. Note that the query cache does not affect query results. You do not get stale data
+        #query_cache_driver: array
 
 when@test:
     doctrine:
@@ -34,6 +38,7 @@ when@test:
 when@prod:
     doctrine:
         orm:
+            # doctrine orm:generate-proxies
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
             query_cache_driver:

@@ -8,6 +8,7 @@ services:
       dockerfile: docker/Dockerfile
     environment:
       PHP_IDE_CONFIG: "serverName=symfony"
+      ENABLE_OPCACHE: 0
     volumes:
       - /home/florain/projects/symfony-demo-application:/app
     networks:
