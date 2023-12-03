@@ -1,12 +1,8 @@
-FROM docker.io/library/composer:2.5.4 as composer
+FROM docker.io/library/composer:2.8.2@sha256:cc12714aa3da014260179539c8bcfd64202cff69c25a5741642d1bb2e7d8fd62 as composer
 
-FROM docker.io/library/php:8.1-fpm-alpine as php
+FROM docker.io/library/php:8.2.25-fpm-alpine3.20@sha256:f64100bc974ce6ac3731c9ce9bf7db06946a68b5bf67be5d93873de6d09bb34c as php
 
 FROM php as base
-
-COPY docker/php.ini /usr/local/etc/php/
-
-COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 # install php extensions
 #RUN docker-php-ext-install pdo_mysql
@@ -41,6 +37,9 @@ RUN \
         -G "$APP_GROUP" \
     && \
     chown $APP_USER:$APP_GROUP .
+
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+COPY docker/php.ini /usr/local/etc/php/
 
 FROM public.ecr.aws/lambda/provided:al2 as aws-lambda
 FROM base as prod-lambda
@@ -88,7 +87,7 @@ ENV ENABLE_OPCACHE=1
 RUN \
     apk add --no-cache linux-headers $PHPIZE_DEPS \
     && \
-    pecl install xdebug-3.2.0 \
+    pecl install xdebug-3.3.2 \
     && \
     docker-php-ext-enable xdebug \
     && \

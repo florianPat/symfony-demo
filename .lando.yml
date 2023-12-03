@@ -1,9 +1,8 @@
 name: symfony-demo-application
-keys: false
+app_mount: disabled
+home: ~
 compose:
   - docker-compose.yml
-env_file:
-  - .env
 proxy:
   caddy:
     - demo.lndo.site
@@ -11,15 +10,10 @@ proxy:
     - mail.lndo.site:1080
 services:
   php:
-    app_mount: false
-  caddy:
-    app_mount: false
-    ssl: true
-    sslExpose: true
+    meUser: app
   database:
-    app_mount: false
-  mailer:
-    app_mount: false
+    user: root
+    working_dir: /
 tooling:
   composer:
     service: php
@@ -38,5 +32,3 @@ tooling:
   psql:
     service: database
     cmd: psql -Uapp
-    user: root
-    dir: /

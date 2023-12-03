@@ -1,23 +1,19 @@
-version: "3.6"
-
 services:
   php:
     build:
-      context: /home/florain/projects/symfony-demo-application
+      context: .
       target: dev
       dockerfile: docker/Dockerfile
     environment:
       PHP_IDE_CONFIG: "serverName=symfony"
       ENABLE_OPCACHE: 0
     volumes:
-      - /home/florain/projects/symfony-demo-application:/app
-    networks:
-      - lando_bridge_network
+      - .:/app
     depends_on:
       - database
   caddy:
     build:
-      context: /home/florain/projects/symfony-demo-application
+      context: .
       target: app_caddy
       dockerfile: docker/caddy/Dockerfile
     depends_on:
@@ -29,11 +25,7 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-      - /home/florain/projects/symfony-demo-application/public:/app/public
-      - /home/florain/.lando/scripts/add-cert.sh:/scripts/000-add-cert
-      - /home/florain/.lando:/lando:cached
-    networks:
-      - lando_bridge_network
+      - ./public:/app/public
   database:
     image: postgres:14-alpine
     environment:
@@ -45,19 +37,11 @@ services:
       - db-data:/var/lib/postgresql/data:rw
     healthcheck:
       test: psql -U postgres -c "\\\l"
-    networks:
-      - lando_bridge_network
   mailer:
     image: schickling/mailcatcher
     ports: ["1025", "1080"]
-    networks:
-      - lando_bridge_network
 
 volumes:
   caddy_data: ~
   caddy_config: ~
   db-data: ~
-
-networks:
-  lando_bridge_network:
-    external: true
