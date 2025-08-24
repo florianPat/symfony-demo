@@ -1,8 +1,8 @@
-FROM docker.io/library/composer:2.8.2@sha256:cc12714aa3da014260179539c8bcfd64202cff69c25a5741642d1bb2e7d8fd62 as composer
+FROM composer:2.8.11@sha256:d013f2c06509ff0a06342f67a7fc062deebda2c36e17b415b035f1299dcd181e AS composer
 
-FROM docker.io/library/php:8.2.25-fpm-alpine3.20@sha256:f64100bc974ce6ac3731c9ce9bf7db06946a68b5bf67be5d93873de6d09bb34c as php
+FROM php:8.2.29-fpm-alpine3.22@sha256:b7355fb38ef93fd0ef6ccbecee006a25f9bb7fbb65a9f6b7a4721582b75c073a AS php
 
-FROM php as base
+FROM php AS base
 
 # install php extensions
 #RUN docker-php-ext-install pdo_mysql
@@ -39,10 +39,11 @@ RUN \
     chown $APP_USER:$APP_GROUP .
 
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
-COPY docker/php.ini /usr/local/etc/php/
 
-FROM public.ecr.aws/lambda/provided:al2 as aws-lambda
-FROM base as prod-lambda
+FROM public.ecr.aws/lambda/provided:al2 AS aws-lambda
+FROM base AS prod-lambda
+
+COPY docker/php.ini /usr/local/etc/php/
 
 COPY composer.* ./
 
@@ -76,24 +77,25 @@ ENV BREF_RUNNER_TYPE=aws
 ENTRYPOINT ["/lambda-entrypoint.sh"]
 CMD [ "public/index.php" ]
 
-FROM base as dev
-
-ENV PHP_MEMORY_LIMIT=-1
-ENV PHP_MAX_EXECUTION_TIME=0
-ENV OPCACHE_VALIDATE_TIMESTAMPS=1
-ENV ENABLE_OPCACHE=1
+FROM base AS dev
 
 # Install xdebug
 RUN \
     apk add --no-cache linux-headers $PHPIZE_DEPS \
     && \
-    pecl install xdebug-3.3.2 \
+    pecl install xdebug-3.4.5 \
     && \
     docker-php-ext-enable xdebug \
     && \
     apk del $PHPIZE_DEPS
 
+COPY docker/php.ini /usr/local/etc/php/
 COPY docker/zz-fpm-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
+ENV PHP_MEMORY_LIMIT=-1
+ENV PHP_MAX_EXECUTION_TIME=0
+ENV OPCACHE_VALIDATE_TIMESTAMPS=1
+ENV ENABLE_OPCACHE=1
 
 ENTRYPOINT ["/helpers/lando-entrypoint.sh"]
 CMD ["php-fpm"]

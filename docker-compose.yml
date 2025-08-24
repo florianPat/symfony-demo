@@ -1,3 +1,4 @@
+name: symfony-demo-application
 services:
   php:
     build:

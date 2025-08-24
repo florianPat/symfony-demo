@@ -9,10 +9,15 @@ proxy:
   mailer:
     - mail.lndo.site:1080
 services:
+  caddy:
+    ssl: true
+    sslExpose: false
+    meUser: root
+    working_dir: /app/public
   php:
     meUser: app
   database:
-    user: root
+    meUser: root
     working_dir: /
 tooling:
   composer:

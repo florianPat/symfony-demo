@@ -24,7 +24,7 @@ route {
     #    # Extra directives
     #    {$MERCURE_EXTRA_DIRECTIVES}
     #}
-    vulcain
+    #vulcain
     php_fastcgi php:9000
     encode zstd gzip
     file_server
